@@ -1,7 +1,8 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import healthRouter from "./routes/health";
+import authRouter from "./routes/auth";
 
 dotenv.config();
 
@@ -12,6 +13,14 @@ app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 
 app.use("/api", healthRouter);
+app.use("/api", authRouter);
+
+app.use(
+  (err: Error, _req: Request, res: Response, _next: NextFunction) => {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+);
 
 app.listen(PORT, () => {
   console.log(`Study Flow API running on http://localhost:${PORT}`);
