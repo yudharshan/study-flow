@@ -66,6 +66,7 @@ model Subject {
   id             String           @id @default(uuid())
   userId         String
   name           String
+  description    String?
   code           String?
   color          String?
   createdAt      DateTime         @default(now())
