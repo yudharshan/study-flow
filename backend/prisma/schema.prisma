@@ -6,3 +6,235 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// ─── Enums ────────────────────────────────────────────────
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+}
+
+enum StudySessionType {
+  POMODORO
+  CUSTOM
+  FOCUS
+}
+
+// ─── User ─────────────────────────────────────────────────
+
+model User {
+  id             String           @id @default(uuid())
+  name           String
+  email          String           @unique
+  passwordHash   String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  subjects       Subject[]
+  tasks          Task[]
+  studySessions  StudySession[]
+  plannerSessions PlannerSession[]
+  reminders      Reminder[]
+  phoneUsage     PhoneUsage[]
+  sleepRecords   SleepRecord[]
+  feedback       Feedback[]
+  analyticsEvents AnalyticsEvent[]
+
+  @@map("users")
+}
+
+// ─── Subject ──────────────────────────────────────────────
+
+model Subject {
+  id             String           @id @default(uuid())
+  userId         String
+  name           String
+  code           String?
+  color          String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks          Task[]
+  studySessions  StudySession[]
+  plannerSessions PlannerSession[]
+
+  @@index([userId])
+  @@map("subjects")
+}
+
+// ─── Task ─────────────────────────────────────────────────
+
+model Task {
+  id             String           @id @default(uuid())
+  userId         String
+  subjectId      String?
+  title          String
+  description    String?
+  priority       TaskPriority     @default(MEDIUM)
+  status         TaskStatus       @default(TODO)
+  deadline       DateTime?
+  estimatedMinutes Int?
+  actualMinutes  Int?
+  completedAt    DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject        Subject?         @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  studySessions  StudySession[]
+  plannerSessions PlannerSession[]
+  reminders      Reminder[]
+
+  @@index([userId])
+  @@index([subjectId])
+  @@index([deadline])
+  @@map("tasks")
+}
+
+// ─── StudySession ─────────────────────────────────────────
+
+model StudySession {
+  id             String           @id @default(uuid())
+  userId         String
+  subjectId      String?
+  taskId         String?
+  startedAt      DateTime
+  endedAt        DateTime?
+  durationMinutes Int
+  sessionType    StudySessionType @default(FOCUS)
+  completed      Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject        Subject?         @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  task           Task?            @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([startedAt])
+  @@map("study_sessions")
+}
+
+// ─── PlannerSession ───────────────────────────────────────
+
+model PlannerSession {
+  id             String           @id @default(uuid())
+  userId         String
+  subjectId      String?
+  taskId         String?
+  title          String
+  startTime      DateTime
+  endTime        DateTime
+  completed      Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject        Subject?         @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  task           Task?            @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@map("planner_sessions")
+}
+
+// ─── Reminder ─────────────────────────────────────────────
+
+model Reminder {
+  id             String           @id @default(uuid())
+  userId         String
+  taskId         String?
+  title          String
+  message        String?
+  reminderTime   DateTime
+  isCompleted    Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task           Task?            @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@map("reminders")
+}
+
+// ─── PhoneUsage ───────────────────────────────────────────
+
+model PhoneUsage {
+  id             String           @id @default(uuid())
+  userId         String
+  date           DateTime         @db.Date
+  totalMinutes   Int
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("phone_usage")
+}
+
+// ─── SleepRecord ──────────────────────────────────────────
+
+model SleepRecord {
+  id             String           @id @default(uuid())
+  userId         String
+  sleepDate      DateTime         @db.Date
+  bedtime        DateTime
+  wakeTime       DateTime
+  durationMinutes Int
+  sleepQuality   Int?
+  notes          String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sleepDate])
+  @@index([userId])
+  @@map("sleep_records")
+}
+
+// ─── Feedback ─────────────────────────────────────────────
+
+model Feedback {
+  id             String           @id @default(uuid())
+  userId         String
+  rating         Int
+  comment        String?
+  category       String?
+  createdAt      DateTime         @default(now())
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("feedback")
+}
+
+// ─── AnalyticsEvent ───────────────────────────────────────
+
+model AnalyticsEvent {
+  id             String           @id @default(uuid())
+  userId         String?
+  eventName      String
+  sessionId      String?
+  timestamp      DateTime         @default(now())
+  metadata       Json             @default("{}")
+  deviceType     String?
+  platform       String?
+
+  user           User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([eventName])
+  @@index([timestamp])
+  @@map("analytics_events")
+}
