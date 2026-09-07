@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import healthRouter from "./routes/health";
 import authRouter from "./routes/auth";
 import subjectsRouter from "./routes/subjects";
+import tasksRouter from "./routes/tasks";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use("/api", healthRouter);
 app.use("/api", authRouter);
 app.use("/api", subjectsRouter);
+app.use("/api", tasksRouter);
 
 app.use(
   (err: Error, _req: Request, res: Response, _next: NextFunction) => {
