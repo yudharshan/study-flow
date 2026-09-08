@@ -141,6 +141,7 @@ model PlannerSession {
   subjectId      String?
   taskId         String?
   title          String
+  notes          String?
   startTime      DateTime
   endTime        DateTime
   completed      Boolean          @default(false)
