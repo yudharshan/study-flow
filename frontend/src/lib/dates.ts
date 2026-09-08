@@ -80,10 +80,15 @@ export function formatDuration(startIso: string, endIso: string): string {
   const minutes = Math.round(
     (new Date(endIso).getTime() - new Date(startIso).getTime()) / 60000
   );
-  if (minutes < 60) return `${minutes}m`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+  return formatMinutes(minutes);
+}
+
+export function formatMinutes(minutes: number): string {
+  const m = Math.max(0, Math.round(minutes));
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  const rem = m % 60;
+  return rem > 0 ? `${h}h ${rem}m` : `${h}h`;
 }
 
 export function isSameLocalDay(a: Date, b: Date): boolean {

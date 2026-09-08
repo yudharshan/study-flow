@@ -21,7 +21,10 @@ export type IconName =
   | "edit"
   | "trash"
   | "chevron-left"
-  | "chevron-right";
+  | "chevron-right"
+  | "pause"
+  | "refresh"
+  | "check";
 
 const paths: Record<IconName, string[]> = {
   dashboard: [
@@ -76,6 +79,11 @@ const paths: Record<IconName, string[]> = {
   "chevron-right": [
     "M8.25 4.5l7.5 7.5-7.5 7.5",
   ],
+  pause: ["M15.75 5.25v13.5m-7.5-13.5v13.5"],
+  refresh: [
+    "M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99",
+  ],
+  check: ["M4.5 12.75l6 6 9-13.5"],
 };
 
 interface IconProps extends SVGProps<SVGSVGElement> {
