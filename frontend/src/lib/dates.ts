@@ -69,6 +69,22 @@ export function weekDays(date: Date): Date[] {
   return Array.from({ length: 7 }, (_, i) => addDays(monday, i));
 }
 
+export function monthBounds(
+  date: Date
+): { startDate: string; endDate: string } {
+  const start = new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0);
+  const end = new Date(
+    date.getFullYear(),
+    date.getMonth() + 1,
+    0,
+    23,
+    59,
+    59,
+    999
+  );
+  return { startDate: start.toISOString(), endDate: end.toISOString() };
+}
+
 export function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString(undefined, {
     hour: "numeric",
