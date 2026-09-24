@@ -1,26 +1,44 @@
 import { Link } from "react-router-dom";
 import {
-  todayTasks,
+  type Task,
   type TaskPriority,
   type TaskStatus,
-  type DashboardTask,
-} from "../../data/mockDashboard";
+} from "../../lib/tasks";
+import { backgroundColor } from "../../lib/colors";
+import { formatTime, isSameLocalDay } from "../../lib/dates";
 import SectionCard from "./SectionCard";
 
 const priorityStyles: Record<TaskPriority, string> = {
-  Low: "bg-gray-100 text-gray-600",
-  Medium: "bg-blue-100 text-blue-700",
-  High: "bg-amber-100 text-amber-700",
-  Urgent: "bg-red-100 text-red-700",
+  LOW: "bg-gray-100 text-gray-600",
+  MEDIUM: "bg-blue-100 text-blue-700",
+  HIGH: "bg-amber-100 text-amber-700",
+  URGENT: "bg-red-100 text-red-700",
 };
 
 const statusLabels: Record<TaskStatus, { label: string; className: string }> = {
   TODO: { label: "To do", className: "text-gray-500" },
   IN_PROGRESS: { label: "In progress", className: "text-blue-600" },
   COMPLETED: { label: "Completed", className: "text-emerald-600" },
+  OVERDUE: { label: "Overdue", className: "text-red-600" },
 };
 
-export default function TodayTasks() {
+function formatPriority(priority: TaskPriority): string {
+  return priority.charAt(0) + priority.slice(1).toLowerCase();
+}
+
+function formatDeadline(dueDate: string | null): string {
+  if (!dueDate) return "No deadline";
+  const date = new Date(dueDate);
+  if (isSameLocalDay(date, new Date())) {
+    return `Today, ${formatTime(dueDate)}`;
+  }
+  return `${date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  })}, ${formatTime(dueDate)}`;
+}
+
+export default function TodayTasks({ tasks }: { tasks: Task[] }) {
   return (
     <SectionCard
       title="Today's Tasks"
@@ -34,21 +52,28 @@ export default function TodayTasks() {
         </Link>
       }
     >
-      <ul className="divide-y divide-gray-100">
-        {todayTasks.map((task) => (
-          <TaskRow key={task.id} task={task} />
-        ))}
-      </ul>
+      {tasks.length === 0 ? (
+        <p className="text-sm text-gray-500 py-6 text-center">
+          No tasks due today.
+        </p>
+      ) : (
+        <ul className="divide-y divide-gray-100">
+          {tasks.map((task) => (
+            <TaskRow key={task.id} task={task} />
+          ))}
+        </ul>
+      )}
     </SectionCard>
   );
 }
 
-function TaskRow({ task }: { task: DashboardTask }) {
+function TaskRow({ task }: { task: Task }) {
   const status = statusLabels[task.status];
   return (
     <li className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
       <span
-        className={`h-2.5 w-2.5 rounded-full shrink-0 ${task.subjectColor}`}
+        className="h-2.5 w-2.5 rounded-full shrink-0"
+        style={backgroundColor(task.subject?.color ?? null)}
       />
       <div className="min-w-0 flex-1">
         <p
@@ -60,18 +85,20 @@ function TaskRow({ task }: { task: DashboardTask }) {
         >
           {task.title}
         </p>
-        <p className="text-xs text-gray-500 truncate">{task.subject}</p>
+        <p className="text-xs text-gray-500 truncate">
+          {task.subject?.name ?? "No subject"}
+        </p>
       </div>
       <span
         className={`hidden sm:inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full ${priorityStyles[task.priority]}`}
       >
-        {task.priority}
+        {formatPriority(task.priority)}
       </span>
       <div className="shrink-0 text-right">
         <span className={`text-xs font-medium ${status.className}`}>
           {status.label}
         </span>
-        <p className="text-xs text-gray-400">{task.deadline}</p>
+        <p className="text-xs text-gray-400">{formatDeadline(task.dueDate)}</p>
       </div>
     </li>
   );

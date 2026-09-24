@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
@@ -10,11 +11,23 @@ import Planner from "./pages/Planner";
 import Timer from "./pages/Timer";
 import Progress from "./pages/Progress";
 import Reminders from "./pages/Reminders";
+import DemoPayment from "./pages/DemoPayment";
 import PhoneUsage from "./pages/PhoneUsage";
 import Sleep from "./pages/Sleep";
 import Admin from "./pages/Admin";
+import { initAnalytics, trackPageView } from "./lib/analytics";
 
 export default function App() {
+  const location = useLocation();
+
+  useEffect(() => {
+    initAnalytics();
+  }, []);
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
+
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
@@ -34,6 +47,7 @@ export default function App() {
         <Route path="/timer" element={<Timer />} />
         <Route path="/progress" element={<Progress />} />
         <Route path="/reminders" element={<Reminders />} />
+        <Route path="/demo-payment" element={<DemoPayment />} />
         <Route path="/phone-usage" element={<PhoneUsage />} />
         <Route path="/sleep" element={<Sleep />} />
         <Route path="/admin" element={<Admin />} />

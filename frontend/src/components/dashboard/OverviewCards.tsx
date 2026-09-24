@@ -1,9 +1,9 @@
-import { overviewStats } from "../../data/mockDashboard";
+import type { OverviewStat } from "./types";
 
-export default function OverviewCards() {
+export default function OverviewCards({ stats }: { stats: OverviewStat[] }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      {overviewStats.map((stat) => (
+      {stats.map((stat) => (
         <div
           key={stat.id}
           className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm"

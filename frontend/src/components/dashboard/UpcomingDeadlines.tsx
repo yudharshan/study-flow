@@ -1,8 +1,5 @@
 import { Link } from "react-router-dom";
-import {
-  upcomingDeadlines,
-  type DashboardDeadline,
-} from "../../data/mockDashboard";
+import type { DeadlineItem } from "./types";
 import SectionCard from "./SectionCard";
 
 function DeadlineChip({ daysLeft }: { daysLeft: number }) {
@@ -27,7 +24,11 @@ function DeadlineChip({ daysLeft }: { daysLeft: number }) {
   );
 }
 
-export default function UpcomingDeadlines() {
+export default function UpcomingDeadlines({
+  deadlines,
+}: {
+  deadlines: DeadlineItem[];
+}) {
   return (
     <SectionCard
       title="Upcoming Deadlines"
@@ -41,16 +42,22 @@ export default function UpcomingDeadlines() {
         </Link>
       }
     >
-      <ul className="divide-y divide-gray-100">
-        {upcomingDeadlines.map((deadline) => (
-          <DeadlineRow key={deadline.id} deadline={deadline} />
-        ))}
-      </ul>
+      {deadlines.length === 0 ? (
+        <p className="text-sm text-gray-500 py-6 text-center">
+          No upcoming deadlines.
+        </p>
+      ) : (
+        <ul className="divide-y divide-gray-100">
+          {deadlines.map((deadline) => (
+            <DeadlineRow key={deadline.id} deadline={deadline} />
+          ))}
+        </ul>
+      )}
     </SectionCard>
   );
 }
 
-function DeadlineRow({ deadline }: { deadline: DashboardDeadline }) {
+function DeadlineRow({ deadline }: { deadline: DeadlineItem }) {
   return (
     <li className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
       <div className="min-w-0 flex-1">

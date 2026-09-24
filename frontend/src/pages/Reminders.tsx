@@ -10,6 +10,7 @@ import {
 } from "../lib/reminders";
 import { fetchTasks, type Task } from "../lib/tasks";
 import { formatTime, toLocalDateInput } from "../lib/dates";
+import { trackEvent } from "../lib/analytics";
 import Icon from "../components/Icon";
 import Modal from "../components/Modal";
 import ReminderForm from "../components/reminders/ReminderForm";
@@ -118,7 +119,8 @@ export default function Reminders() {
         await updateReminder(editing.id, input);
         setFlash("Reminder updated");
       } else {
-        await createReminder(input);
+        const result = await createReminder(input);
+        trackEvent("reminder_created", { reminder_id: result.reminder.id });
         setFlash("Reminder added");
       }
       closeForm();

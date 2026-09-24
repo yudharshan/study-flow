@@ -9,6 +9,7 @@ import {
 } from "react";
 import { apiRequest } from "../lib/api";
 import { getToken, removeToken, setToken } from "../lib/token";
+import { trackEvent } from "../lib/analytics";
 
 export interface User {
   id: string;
@@ -83,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(data.token);
     setTokenState(data.token);
     setUser(data.user);
+    trackEvent("login", { method: "password" });
   }, []);
 
   const register = useCallback(
@@ -94,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(data.token);
       setTokenState(data.token);
       setUser(data.user);
+      trackEvent("sign_up", { method: "email" });
     },
     []
   );

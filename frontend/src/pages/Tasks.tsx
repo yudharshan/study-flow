@@ -12,6 +12,7 @@ import {
 } from "../lib/tasks";
 import { fetchSubjects, type Subject } from "../lib/subjects";
 import { backgroundColor } from "../lib/colors";
+import { trackEvent } from "../lib/analytics";
 import Icon from "../components/Icon";
 import Modal from "../components/Modal";
 import TaskForm from "../components/tasks/TaskForm";
@@ -124,7 +125,8 @@ export default function Tasks() {
         await updateTask(editing.id, input);
         setFlash("Task updated");
       } else {
-        await createTask(input);
+        const result = await createTask(input);
+        trackEvent("task_created", { task_id: result.task.id });
         setFlash("Task added");
       }
       closeForm();
@@ -140,6 +142,9 @@ export default function Tasks() {
     setLoading(true);
     try {
       await updateTask(task.id, { status });
+      if (status === "COMPLETED" && task.status !== "COMPLETED") {
+        trackEvent("task_completed", { task_id: task.id });
+      }
       await loadTasks();
     } catch {
       setFlash("Could not update task status");

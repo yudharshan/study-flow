@@ -9,6 +9,7 @@ import plannerSessionsRouter from "./routes/plannerSessions";
 import studySessionsRouter from "./routes/studySessions";
 import progressRouter from "./routes/progress";
 import remindersRouter from "./routes/reminders";
+import analyticsRouter from "./routes/analytics";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.use("/api", plannerSessionsRouter);
 app.use("/api", studySessionsRouter);
 app.use("/api", progressRouter);
 app.use("/api", remindersRouter);
+app.use("/api", analyticsRouter);
 
 app.use(
   (err: Error, _req: Request, res: Response, _next: NextFunction) => {

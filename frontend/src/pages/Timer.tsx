@@ -16,6 +16,7 @@ import {
   toLocalDateKey,
 } from "../lib/dates";
 import { backgroundColor, textOnColor } from "../lib/colors";
+import { trackEvent } from "../lib/analytics";
 import Icon from "../components/Icon";
 import Modal from "../components/Modal";
 
@@ -147,6 +148,10 @@ export default function Timer() {
           endedAt: endedAtIso,
         });
         await loadSessions();
+        trackEvent("study_session_completed", {
+          session_type: mode,
+          duration_minutes: durationMinutes,
+        });
       } catch (err) {
         setSaveError(err instanceof Error ? err.message : "Failed to save session");
         completionSavedRef.current = false;
@@ -242,6 +247,10 @@ export default function Timer() {
     totalMsRef.current = remainingMsRef.current;
     deadlineAtRef.current = Date.now() + remainingMsRef.current;
     setStatus("running");
+    trackEvent("study_session_started", {
+      session_type: mode,
+      planned_minutes: Math.round(totalMsRef.current / 60000),
+    });
   }
 
   function pause() {

@@ -8,6 +8,7 @@ import {
   type SubjectInput,
 } from "../lib/subjects";
 import { backgroundColor } from "../lib/colors";
+import { trackEvent } from "../lib/analytics";
 import Icon from "../components/Icon";
 import Modal from "../components/Modal";
 import SubjectForm from "../components/subjects/SubjectForm";
@@ -70,7 +71,8 @@ export default function Subjects() {
         await updateSubject(editing.id, input);
         setFlash("Subject updated");
       } else {
-        await createSubject(input);
+        const result = await createSubject(input);
+        trackEvent("subject_created", { subject_id: result.subject.id });
         setFlash("Subject added");
       }
       closeForm();
