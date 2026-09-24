@@ -22,37 +22,48 @@ declare global {
   }
 }
 
-let analyticsInitialized = false;
-
-function createGtag(
-  id: string
-): (command: string, ...args: unknown[]) => void {
-  window.dataLayer = window.dataLayer ?? [];
-  const gtag: (command: string, ...args: unknown[]) => void = function () {
-    window.dataLayer?.push(Array.from(arguments));
-  };
-  gtag("js", new Date());
-  window.gtag = gtag;
-  const script = document.createElement("script");
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
-  document.head.appendChild(script);
-  return gtag;
+// Ensure dataLayer and window.gtag exist globally immediately upon module evaluation
+if (typeof window !== "undefined") {
+  window.dataLayer = window.dataLayer || [];
+  if (typeof window.gtag !== "function") {
+    window.gtag = function () {
+      // Must push the arguments object directly, NOT an array
+      window.dataLayer?.push(arguments);
+    };
+  }
 }
+
+let analyticsInitialized = false;
 
 export function initAnalytics(): void {
   if (analyticsInitialized) return;
   analyticsInitialized = true;
-  if (!GA_MEASUREMENT_ID) return;
-  const gtag =
-    typeof window.gtag === "function"
-      ? window.gtag
-      : createGtag(GA_MEASUREMENT_ID);
-  gtag("config", GA_MEASUREMENT_ID, { send_page_view: false });
+
+  if (!GA_MEASUREMENT_ID) {
+    console.warn("GA Warning: VITE_GA_MEASUREMENT_ID environment variable is missing.");
+    return;
+  }
+
+  // 1. Queue initial js command
+  window.gtag?.("js", new Date());
+
+  // 2. Dynamically inject the Google tag script if not already present
+  if (!document.querySelector(`script[src*="googletagmanager.com/gtag/js"]`)) {
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(GA_MEASUREMENT_ID)}`;
+    document.head.appendChild(script);
+  }
+
+  // 3. Configure GA4 with debug_mode enabled for instant DebugView tracking
+  window.gtag?.("config", GA_MEASUREMENT_ID, {
+    send_page_view: false,
+    debug_mode: true
+  });
 }
 
 export function trackEvent(
-  name: AnalyticsEventName,
+  name: AnalyticsEventName | string,
   params: Record<string, unknown> = {}
 ): void {
   if (typeof window.gtag !== "function") return;
@@ -60,7 +71,11 @@ export function trackEvent(
 }
 
 export function trackPageView(path: string): void {
-  trackEvent("page_view", { page_path: path });
+  trackEvent("page_view", {
+    page_path: path,
+    page_location: window.location.href,
+    page_title: document.title
+  });
 }
 
 export interface PurchaseItem {
