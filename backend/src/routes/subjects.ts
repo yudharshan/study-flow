@@ -6,10 +6,12 @@ import {
   deleteSubject,
 } from "../controllers/subjectController";
 import { authenticate } from "../middleware/auth";
+import { requireSubscription } from "../middleware/subscription";
 
 const router = Router();
 
 router.use(authenticate);
+router.use(requireSubscription);
 
 router.get("/subjects", listSubjects);
 router.post("/subjects", createSubject);

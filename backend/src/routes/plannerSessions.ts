@@ -6,10 +6,12 @@ import {
   deletePlannerSession,
 } from "../controllers/plannerSessionController";
 import { authenticate } from "../middleware/auth";
+import { requireSubscription } from "../middleware/subscription";
 
 const router = Router();
 
 router.use(authenticate);
+router.use(requireSubscription);
 
 router.get("/planner", listPlannerSessions);
 router.post("/planner", createPlannerSession);

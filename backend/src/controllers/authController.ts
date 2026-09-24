@@ -12,6 +12,10 @@ type UserWithoutPassword = {
   name: string;
   email: string;
   role: string;
+  subscription: string;
+  planId: string | null;
+  subscribedAt: Date | null;
+  subscriptionExpiresAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -32,6 +36,10 @@ function safeUser(user: UserWithoutPassword) {
     name: user.name,
     email: user.email,
     role: user.role,
+    subscription: user.subscription,
+    planId: user.planId,
+    subscribedAt: user.subscribedAt,
+    subscriptionExpiresAt: user.subscriptionExpiresAt,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };

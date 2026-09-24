@@ -1,4 +1,6 @@
 import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { trackPurchase } from "../lib/analytics";
 import {
   RazorpayCheckoutCancelledError,
@@ -8,10 +10,11 @@ import {
   verifyDemoRazorpayPayment,
 } from "../lib/razorpay";
 
-const DEMO_ITEM_ID = "study-flow-demo";
-const DEMO_ITEM_NAME = "Study Flow Demo Access";
+const DEMO_ITEM_ID = "study-flow-monthly-demo";
+const DEMO_ITEM_NAME = "Study Flow Monthly Demo";
 const DEMO_PRICE = 10;
 const DEMO_CURRENCY = "INR";
+const DEMO_SUBSCRIPTION_DAYS = 30;
 
 type Stage = "idle" | "creating-order" | "opening-checkout" | "verifying";
 
@@ -32,6 +35,7 @@ export default function DemoPayment() {
   const [stage, setStage] = useState<Stage>("idle");
   const [status, setStatus] = useState<PurchaseStatus>({ kind: "idle" });
   const busyRef = useRef(false);
+  const { refreshUser } = useAuth();
 
   async function handlePay() {
     if (busyRef.current) return;
@@ -67,11 +71,16 @@ export default function DemoPayment() {
         demo: true,
       });
 
+      try {
+        await refreshUser();
+      } catch {
+        // Account is already active on the backend; refresh failure is not fatal.
+      }
+
       setStage("idle");
       setStatus({
         kind: "success",
-        message:
-          "Payment verified in TEST mode. No real money was charged.",
+        message: `Payment verified in TEST mode. Your subscription is now ACTIVE for ${DEMO_SUBSCRIPTION_DAYS} days. No real money was charged.`,
       });
     } catch (err) {
       setStage("idle");
@@ -98,9 +107,11 @@ export default function DemoPayment() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Demo Payment</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Study Flow Monthly Demo
+          </h1>
           <p className="text-gray-500 mt-1">
-            Try the checkout flow without spending real money.
+            Activate your demo subscription to unlock Study Flow features.
           </p>
         </div>
         <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-800 text-xs font-semibold px-3 py-1">
@@ -109,8 +120,14 @@ export default function DemoPayment() {
       </div>
 
       {status.kind === "success" && (
-        <div className="p-3 rounded-lg bg-emerald-50 text-sm text-emerald-700 border border-emerald-200">
-          {status.message}
+        <div className="p-3 rounded-lg bg-emerald-50 text-sm text-emerald-700 border border-emerald-200 flex flex-wrap items-center justify-between gap-2">
+          <span>{status.message}</span>
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center rounded-lg bg-emerald-600 text-white text-sm font-medium px-4 py-1.5 hover:bg-emerald-700 transition-colors"
+          >
+            Go to Dashboard
+          </Link>
         </div>
       )}
       {status.kind === "cancelled" && (
@@ -128,14 +145,16 @@ export default function DemoPayment() {
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col">
           <h2 className="font-semibold text-gray-900">{DEMO_ITEM_NAME}</h2>
           <p className="text-xs text-gray-500 mt-1">
-            {DEMO_ITEM_NAME} activation for the {DEMO_ITEM_ID} plan.
+            Monthly subscription for the {DEMO_ITEM_ID} plan, activated
+            immediately in test mode.
           </p>
           <p className="mt-4 text-3xl font-bold text-gray-900 tabular-nums">
             {"\u20B9"}
             {DEMO_PRICE.toLocaleString("en-IN")}
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            One-time demo plan &middot; INR
+            {DEMO_PRICE}/month &middot; INR &middot; valid for{" "}
+            {DEMO_SUBSCRIPTION_DAYS} days
           </p>
           <button
             onClick={() => void handlePay()}
@@ -147,8 +166,10 @@ export default function DemoPayment() {
           <div className="mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800">
             TEST MODE: Razorpay&apos;s hosted test checkout opens. Use
             Razorpay&apos;s test cards (e.g. 4111 1111 1111 1111) with any
-            future expiry and CVV to complete the checkout. No real cards,
-            UPI, or bank details are collected or stored by Study Flow.
+            future expiry and CVV to complete the checkout. This is a{" "}
+            {DEMO_SUBSCRIPTION_DAYS}-day demo activation, not a real recurring
+            subscription. No real cards, UPI, or bank details are collected or
+            stored by Study Flow.
           </div>
         </div>
       </div>

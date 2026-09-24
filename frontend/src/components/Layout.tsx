@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Icon, { type IconName } from "./Icon";
 
@@ -36,6 +36,51 @@ function getInitials(name: string): string {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("");
+}
+
+function formatDate(date: string | null): string {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function SubscriptionBadge() {
+  const { user } = useAuth();
+  if (!user) return null;
+
+  const active = user.role === "ADMIN" ||
+    (user.subscription === "ACTIVE" &&
+      user.subscriptionExpiresAt !== null &&
+      new Date(user.subscriptionExpiresAt) > new Date());
+  const planLabel = user.role === "ADMIN" ? "Admin" : "Monthly Demo";
+
+  return (
+    <Link
+      to="/demo-payment"
+      title={
+        active && user.subscriptionExpiresAt
+          ? `Expires ${formatDate(user.subscriptionExpiresAt)}`
+          : "Complete the demo activation"
+      }
+      className={`flex flex-col items-end rounded-lg px-3 py-1.5 text-xs font-medium transition-colors border ${
+        active
+          ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+          : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+      }`}
+    >
+      <span className="font-semibold">
+        {planLabel} &middot; {active ? "ACTIVE" : "INACTIVE"}
+      </span>
+      {active && user.subscriptionExpiresAt && (
+        <span className="text-[10px] text-gray-500">
+          Expires {formatDate(user.subscriptionExpiresAt)}
+        </span>
+      )}
+    </Link>
+  );
 }
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
@@ -140,6 +185,7 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-3">
+            <SubscriptionBadge />
             <div className="hidden sm:flex flex-col items-end">
               <p className="text-sm font-medium text-gray-900">
                 {getGreeting()},

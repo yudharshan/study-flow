@@ -6,10 +6,12 @@ import {
   deleteReminder,
 } from "../controllers/reminderController";
 import { authenticate } from "../middleware/auth";
+import { requireSubscription } from "../middleware/subscription";
 
 const router = Router();
 
 router.use(authenticate);
+router.use(requireSubscription);
 
 router.get("/reminders", listReminders);
 router.post("/reminders", createReminder);

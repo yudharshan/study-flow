@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import SubscriptionGate from "./components/SubscriptionGate";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -40,17 +41,19 @@ export default function App() {
         }
       >
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/subjects" element={<Subjects />} />
-        <Route path="/tasks" element={<Tasks />} />
-        <Route path="/planner" element={<Planner />} />
-        <Route path="/timer" element={<Timer />} />
-        <Route path="/progress" element={<Progress />} />
-        <Route path="/reminders" element={<Reminders />} />
         <Route path="/demo-payment" element={<DemoPayment />} />
-        <Route path="/phone-usage" element={<PhoneUsage />} />
-        <Route path="/sleep" element={<Sleep />} />
-        <Route path="/admin" element={<Admin />} />
+        <Route element={<SubscriptionGate />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/subjects" element={<Subjects />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/planner" element={<Planner />} />
+          <Route path="/timer" element={<Timer />} />
+          <Route path="/progress" element={<Progress />} />
+          <Route path="/reminders" element={<Reminders />} />
+          <Route path="/phone-usage" element={<PhoneUsage />} />
+          <Route path="/sleep" element={<Sleep />} />
+          <Route path="/admin" element={<Admin />} />
+        </Route>
       </Route>
     </Routes>
   );

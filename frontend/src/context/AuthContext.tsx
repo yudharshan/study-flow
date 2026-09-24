@@ -11,11 +11,17 @@ import { apiRequest } from "../lib/api";
 import { getToken, removeToken, setToken } from "../lib/token";
 import { trackEvent } from "../lib/analytics";
 
+export type SubscriptionStatus = "ACTIVE" | "INACTIVE";
+
 export interface User {
   id: string;
   name: string;
   email: string;
   role: string;
+  subscription: SubscriptionStatus;
+  planId: string | null;
+  subscribedAt: string | null;
+  subscriptionExpiresAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -32,6 +38,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -107,9 +114,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    const currentToken = getToken();
+    if (!currentToken) return;
+    const data = await apiRequest<{ user: User }>("/auth/me", {
+      method: "GET",
+    });
+    setUser(data.user);
+  }, []);
+
   const value = useMemo(
-    () => ({ user, token, loading, login, register, logout }),
-    [user, token, loading, login, register, logout]
+    () => ({ user, token, loading, login, register, logout, refreshUser }),
+    [user, token, loading, login, register, logout, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

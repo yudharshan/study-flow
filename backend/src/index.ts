@@ -10,6 +10,7 @@ import studySessionsRouter from "./routes/studySessions";
 import progressRouter from "./routes/progress";
 import remindersRouter from "./routes/reminders";
 import analyticsRouter from "./routes/analytics";
+import razorpayRouter from "./routes/razorpay";
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use("/api", studySessionsRouter);
 app.use("/api", progressRouter);
 app.use("/api", remindersRouter);
 app.use("/api", analyticsRouter);
+app.use("/api/razorpay", razorpayRouter);
 
 app.use(
   (err: Error, _req: Request, res: Response, _next: NextFunction) => {

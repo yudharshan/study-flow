@@ -6,10 +6,12 @@ import {
   deleteTask,
 } from "../controllers/taskController";
 import { authenticate } from "../middleware/auth";
+import { requireSubscription } from "../middleware/subscription";
 
 const router = Router();
 
 router.use(authenticate);
+router.use(requireSubscription);
 
 router.get("/tasks", listTasks);
 router.post("/tasks", createTask);
