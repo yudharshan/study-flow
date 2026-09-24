@@ -18,12 +18,37 @@ export type AnalyticsEventName =
 declare global {
   interface Window {
     gtag?: (command: string, ...args: unknown[]) => void;
+    dataLayer?: unknown[];
   }
 }
 
+let analyticsInitialized = false;
+
+function createGtag(
+  id: string
+): (command: string, ...args: unknown[]) => void {
+  window.dataLayer = window.dataLayer ?? [];
+  const gtag: (command: string, ...args: unknown[]) => void = function () {
+    window.dataLayer?.push(Array.from(arguments));
+  };
+  gtag("js", new Date());
+  window.gtag = gtag;
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
+  document.head.appendChild(script);
+  return gtag;
+}
+
 export function initAnalytics(): void {
-  if (typeof window.gtag !== "function" || !GA_MEASUREMENT_ID) return;
-  window.gtag("config", GA_MEASUREMENT_ID, { send_page_view: false });
+  if (analyticsInitialized) return;
+  analyticsInitialized = true;
+  if (!GA_MEASUREMENT_ID) return;
+  const gtag =
+    typeof window.gtag === "function"
+      ? window.gtag
+      : createGtag(GA_MEASUREMENT_ID);
+  gtag("config", GA_MEASUREMENT_ID, { send_page_view: false });
 }
 
 export function trackEvent(
