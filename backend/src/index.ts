@@ -30,14 +30,14 @@ app.use(express.json());
 
 app.use("/api", healthRouter);
 app.use("/api", authRouter);
+app.use("/api", analyticsRouter);
+app.use("/api/razorpay", razorpayRouter);
 app.use("/api", subjectsRouter);
 app.use("/api", tasksRouter);
 app.use("/api", plannerSessionsRouter);
 app.use("/api", studySessionsRouter);
 app.use("/api", progressRouter);
 app.use("/api", remindersRouter);
-app.use("/api", analyticsRouter);
-app.use("/api/razorpay", razorpayRouter);
 
 app.use(
   (err: Error, _req: Request, res: Response, _next: NextFunction) => {
